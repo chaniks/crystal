@@ -191,6 +191,7 @@ describe "String" do
     assert { "0b1101".to_i(prefix: true).should eq(13) }
     assert { "0b001101".to_i(prefix: true).should eq(13) }
     assert { "0123".to_i(prefix: true).should eq(83) }
+    assert { "0o123".to_i(prefix: true).should eq(83) }
     assert { "0".to_i(prefix: true).should eq(0) }
     assert { "123hello".to_i(strict: false).should eq(123) }
     assert { "99 red balloons".to_i(strict: false).should eq(99) }

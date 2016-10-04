@@ -514,6 +514,9 @@ class String
         when 'x'
           base = 16
           ptr += 1
+        when 'o'
+          base = 8
+          ptr += 1
         else
           base = 8
           single_zero = true
