@@ -490,6 +490,7 @@ class String
 
     negative = false
     found_digit = false
+    single_zero = false
     mul_overflow = ~0_u64 / base
 
     # Check + and -
@@ -515,6 +516,7 @@ class String
           ptr += 1
         else
           base = 8
+          single_zero = true
         end
         found_digit = false
       else
@@ -559,7 +561,7 @@ class String
       ptr += 1
     end
 
-    if found_digit
+    if found_digit || single_zero
       unless ptr.value == 0
         if whitespace
           while ptr.value.unsafe_chr.whitespace?
