@@ -73,19 +73,23 @@ module Spec
           if ex = fail.exception
             puts
             puts "  #{i + 1}) #{fail.description}"
-            if ex.is_a?(AssertionFailed)
-              source_line = Spec.read_line(ex.file, ex.line)
-              if source_line
-                puts Spec.color("     Failure/Error: #{source_line.strip}", :error)
-              end
-            end
-            puts
 
-            ex.to_s.split("\n").each do |line|
-              print "       "
-              puts Spec.color(line, :error)
-            end
-            unless ex.is_a?(AssertionFailed)
+            msg = ex.to_s.gsub(/[\r\n]/, " ").squeeze(" ")
+            puts Spec.color("    Failure/Error: #{msg}", :error)
+
+            if ex.is_a?(AssertionFailed)
+              puts
+
+              linenos = ex.line-1 .. ex.line+1
+              space_needed = linenos.max.to_s.size
+
+              linenos.each do |lineno|
+                line = Spec.read_line(ex.file, lineno) || ""
+                num = lineno.to_s.rjust(space_needed)
+                chk = lineno == ex.line ? ">" : " "
+                puts Spec.color("     #{chk}#{num}: #{line.chomp}", :error)
+              end
+            else
               ex.backtrace.each do |trace|
                 print "       "
                 puts Spec.color(trace, :error)
