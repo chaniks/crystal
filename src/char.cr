@@ -467,7 +467,7 @@ struct Char
     else
       ord = ord()
       if 0 <= ord < 256
-        digit = String::CHAR_TO_DIGIT.to_unsafe[ord]
+        digit = String::CHAR_TO_DIGIT.to_unsafe[ord].to_i32
         return if digit == -1 || digit >= base
         digit
       end

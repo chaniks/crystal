@@ -132,6 +132,10 @@ describe "Char" do
     ('0'..'9').each_with_index do |c, i|
       c.to_i.should eq(i)
     end
+
+    typeof('0'.to_i).should eq Int32
+    typeof('0'.to_i?).should eq Int32 | Nil
+
     expect_raises(ArgumentError) { 'a'.to_i }
     'a'.to_i?.should be_nil
 
