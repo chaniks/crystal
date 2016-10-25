@@ -443,7 +443,21 @@ struct Char
   # 'z'.to_i(16) # => ArgumentError
   # ```
   def to_i(base : Int = 10)
-    to_i?(base) || raise ArgumentError.new("Invalid integer: #{self}")
+    validate_base!(base)
+    # `String::CHAR_TO_DIGIT` is used here because this method rarely hits
+    # the *inline* optimization. In that case, it is about x2 faster than
+    # using case/when (or if/else) clause
+    if 0 <= ord < 256
+      digit = String::CHAR_TO_DIGIT.to_unsafe[ord] # may return -1
+      return digit.to_i32 if 0 <= digit < base
+    end
+    raise_invalid_integer!
+  end
+
+  # separated for better performance
+  @[NoInline]
+  private def raise_invalid_integer!
+    raise ArgumentError.new("Invalid integer: #{self}")
   end
 
   # Returns the integer value of this char if it's an ASCII char denoting a digit
@@ -459,19 +473,22 @@ struct Char
   # 'z'.to_i(16) # => ArgumentError
   # ```
   def to_i?(base : Int = 10)
-    raise ArgumentError.new "invalid base #{base}, expected 2 to 36" unless 2 <= base <= 36
+    validate_base!(base)
+    # case/when is used here rather than `String::CHAR_TO_DIGIT` to invoke
+    # the *inline* optimization for this method
+    digit = case self
+            when '0'..'9' then self - '0'
+            when 'A'..'Z' then self - 'A' + 10
+            when 'a'..'z' then self - 'a' + 10
+            else               -1
+            end
+    (0 <= digit < base) ? digit : nil
+  end
 
-    if base == 10
-      return unless '0' <= self <= '9'
-      self - '0'
-    else
-      ord = ord()
-      if 0 <= ord < 256
-        digit = String::CHAR_TO_DIGIT.to_unsafe[ord].to_i32
-        return if digit == -1 || digit >= base
-        digit
-      end
-    end
+  # just for dry principle
+  @[AlwaysInline]
+  private def validate_base!(base)
+    raise ArgumentError.new "invalid base #{base}, expected 2 to 36" unless 2 <= base <= 36
   end
 
   # Same as `to_i`
